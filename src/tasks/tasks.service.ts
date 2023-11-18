@@ -46,9 +46,5 @@ export class TasksService {
     if (title) task.title = title;
 
     if (status) task.status = status;
-
-    this.tasks = this.tasks.map((oldTask) => {
-      if (oldTask.id === id) return (oldTask = task);
-    });
   }
 }
