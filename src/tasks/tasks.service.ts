@@ -27,7 +27,7 @@ export class TasksService {
 
     if (search) {
       qb.andWhere(
-        'LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search)',
+        '(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))',
         {
           search: `%${search}%`,
         },
@@ -49,23 +49,27 @@ export class TasksService {
     return task;
   }
 
-  async getTaskById(id: string): Promise<Task> {
-    const found = await this.tasksRepository.findOne({ where: { id: id } });
+  async getTaskById(id: string, user: User): Promise<Task> {
+    const found = await this.tasksRepository.findOne({ where: { id, user } });
     if (!found) {
       throw new NotFoundException(`Task with ID: '${id}' not found`);
     }
     return found;
   }
-  async deleteTask(id: string): Promise<void> {
-    const found = await this.getTaskById(id);
+  async deleteTask(id: string, user: User): Promise<void> {
+    const result = await this.tasksRepository.delete({ id, user });
 
-    await this.tasksRepository.remove(found);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID '${id}' not found`);
+    }
   }
+
   async updateTaskById(
     id: string,
     updateTaskDto: UpdateTaskDto,
+    user: User,
   ): Promise<Task> {
-    const task = await this.getTaskById(id);
+    const task = await this.getTaskById(id, user);
     const { title, description, status } = updateTaskDto;
     if (description) task.description = description;
     if (title) task.title = title;
