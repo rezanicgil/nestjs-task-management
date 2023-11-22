@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Task } from './task.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +18,7 @@ export class TasksService {
     @InjectRepository(Task) private tasksRepository: Repository<Task>,
     private readonly entityManager: EntityManager,
   ) {}
-
+  private logger = new Logger('TaskService');
   async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
     const { status, search } = filterDto;
 
@@ -33,8 +38,14 @@ export class TasksService {
         },
       );
     }
-    const tasks = await qb.getMany();
-    return tasks;
+
+    try {
+      const tasks = await qb.getMany();
+      return tasks;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException();
+    }
   }
   async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
     const { title, description, status } = createTaskDto;
