@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const logger = new Logger();
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   const configService: ConfigService = new ConfigService();
 
   app.useGlobalPipes(new ValidationPipe());
