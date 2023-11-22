@@ -6,7 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ envFilePath: [`.env.stage.${process.env.STAGE}`] }),
     DatabaseModule,
     TasksModule,
     AuthModule,
